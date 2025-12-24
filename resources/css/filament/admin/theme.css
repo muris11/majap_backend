@@ -1,0 +1,341 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@config '../../../../tailwind.config.js';
+
+/* ============================================
+   MAJAP Admin - Custom Filament Theme
+   Responsive Design Improvements
+   ============================================ */
+
+/* Root Variables for Consistency */
+:root {
+    --fi-primary: #606C38;
+    --fi-primary-dark: #4a5a2d;
+    --fi-primary-darker: #283618;
+}
+
+/* ============================================
+   Mobile Optimizations (< 640px)
+   ============================================ */
+@media (max-width: 640px) {
+    /* Topbar - Reduce padding on mobile */
+    .fi-topbar {
+        padding: 0.75rem !important;
+    }
+    
+    /* Sidebar - Full width on mobile */
+    .fi-sidebar {
+        width: 100% !important;
+    }
+    
+    /* Page headings - Smaller on mobile */
+    .fi-header-heading {
+        font-size: 1.25rem !important;
+        line-height: 1.75rem !important;
+    }
+    
+    /* Buttons - Better touch targets */
+    .fi-btn {
+        padding: 0.625rem 1rem !important;
+        min-height: 2.75rem;
+    }
+    
+    /* Table text - Smaller for better fit */
+    .fi-ta-text {
+        font-size: 0.875rem !important;
+    }
+    
+    /* Form sections - Reduce padding */
+    .fi-section {
+        padding: 1rem !important;
+    }
+    
+    /* Modal - Full screen on mobile */
+    .fi-modal-window {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        min-height: 100vh !important;
+    }
+    
+    /* Stats widgets - Stack vertically */
+    .fi-wi-stats-overview-stat {
+        min-width: 100% !important;
+    }
+}
+
+/* ============================================
+   Tablet Optimizations (640px - 1024px)
+   ============================================ */
+@media (min-width: 640px) and (max-width: 1024px) {
+    /* Sidebar - Collapsible by default */
+    .fi-sidebar {
+        width: 16rem;
+    }
+    
+    /* Content - Better spacing */
+    .fi-main {
+        padding: 1.5rem;
+    }
+    
+    /* Cards - Optimal spacing */
+    .fi-section {
+        padding: 1.25rem;
+    }
+}
+
+/* ============================================
+   Table Responsive Improvements
+   ============================================ */
+
+/* Horizontal scroll for tables on small screens */
+.fi-ta {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky first column on mobile */
+@media (max-width: 768px) {
+    .fi-ta-table {
+        min-width: 100%;
+    }
+    
+    .fi-ta-cell:first-child,
+    .fi-ta-header-cell:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background: inherit;
+    }
+}
+
+/* Better table cell spacing */
+.fi-ta-cell,
+.fi-ta-header-cell {
+    padding: 0.75rem 1rem;
+}
+
+@media (max-width: 640px) {
+    .fi-ta-cell,
+    .fi-ta-header-cell {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* ============================================
+   Form Improvements
+   ============================================ */
+
+/* Better form field spacing */
+.fi-fo-field-wrp {
+    margin-bottom: 1.5rem;
+}
+
+/* Input fields - Better touch targets */
+.fi-input,
+.fi-select {
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+}
+
+/* File upload - Better mobile UX */
+.fi-fo-file-upload {
+    padding: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .fi-fo-file-upload {
+        padding: 1rem;
+    }
+}
+
+/* ============================================
+   Navigation Improvements
+   ============================================ */
+
+/* Navigation items - Better spacing */
+.fi-sidebar-item {
+    padding: 0.625rem 1rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.fi-sidebar-item:hover {
+    background-color: rgba(96, 108, 56, 0.1);
+}
+
+.fi-sidebar-item.fi-active {
+    background-color: rgba(96, 108, 56, 0.15);
+    font-weight: 600;
+}
+
+/* Navigation group labels */
+.fi-sidebar-group-label {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+}
+
+/* ============================================
+   Card & Section Improvements
+   ============================================ */
+
+/* Better card shadows and borders */
+.fi-section {
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode adjustments */
+.dark .fi-section {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   Dashboard Specific
+   ============================================ */
+
+/* Stats widgets - Responsive grid */
+.fi-wi-stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .fi-wi-stats-overview {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Stats card hover effect */
+.fi-wi-stats-overview-stat {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   Button Improvements
+   ============================================ */
+
+/* Better button spacing and sizing */
+.fi-btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.fi-btn-primary {
+    background-color: var(--fi-primary);
+    border-color: var(--fi-primary);
+}
+
+.fi-btn-primary:hover {
+    background-color: var(--fi-primary-dark);
+    border-color: var(--fi-primary-dark);
+}
+
+/* Mobile - Full width buttons in forms */
+@media (max-width: 640px) {
+    .fi-form-actions .fi-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   Loading & Skeleton States
+   ============================================ */
+
+/* Loading spinner - Better visibility */
+.fi-loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Accessibility Improvements
+   ============================================ */
+
+/* Focus states - Better visibility */
+.fi-input:focus,
+.fi-select:focus,
+.fi-textarea:focus {
+    outline: 2px solid var(--fi-primary);
+    outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.fi-skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--fi-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.fi-skip-link:focus {
+    top: 0;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+    .fi-sidebar,
+    .fi-topbar,
+    .fi-ta-actions,
+    .fi-pagination {
+        display: none !important;
+    }
+    
+    .fi-main {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .fi-ta {
+        overflow: visible !important;
+    }
+}
+
+/* ============================================
+   Smooth Transitions
+   ============================================ */
+
+.fi-sidebar,
+.fi-topbar,
+.fi-section,
+.fi-btn,
+.fi-sidebar-item {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

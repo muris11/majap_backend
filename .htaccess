@@ -1,0 +1,163 @@
+ # =============================================================================
+ # LARAVEL 12 CPANEL ROOT .HTACCESS
+ # Security Hardened Configuration for Shared Hosting
+ # =============================================================================
+ 
+ <IfModule mod_rewrite.c>
+     Options -MultiViews -Indexes
+     RewriteEngine On
+ 
+     # ==========================================================================
+     # SECTION 1: FORCE HTTPS (Uncomment in production)
+     # ==========================================================================
+     # RewriteCond %{HTTPS} !=on
+     # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+     # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+ 
+     # ==========================================================================
+     # SECTION 2: BLOCK SENSITIVE FILES & DIRECTORIES
+     # ==========================================================================
+     
+     # Block .env files (CRITICAL)
+     RewriteRule ^\.env$ - [F,L]
+     RewriteRule ^\.env\..*$ - [F,L]
+     
+     # Block .git directory and files
+     RewriteRule ^\.git - [F,L]
+     RewriteRule ^\.gitignore$ - [F,L]
+     RewriteRule ^\.gitattributes$ - [F,L]
+     
+     # Block composer files
+     RewriteRule ^composer\.json$ - [F,L]
+     RewriteRule ^composer\.lock$ - [F,L]
+     
+     # Block package manager files
+     RewriteRule ^package\.json$ - [F,L]
+     RewriteRule ^package-lock\.json$ - [F,L]
+     
+     # Block config files
+     RewriteRule ^phpunit\.xml$ - [F,L]
+     RewriteRule ^\.editorconfig$ - [F,L]
+     RewriteRule ^vite\.config\.js$ - [F,L]
+     RewriteRule ^tailwind\.config\.js$ - [F,L]
+     RewriteRule ^postcss\.config\.js$ - [F,L]
+     
+     # Block artisan
+     RewriteRule ^artisan$ - [F,L]
+     
+     # Block vendor directory completely
+     RewriteRule ^vendor(/.*)?$ - [F,L]
+     
+    # Block direct access to storage directory
+    # Note: /storage/* URLs are handled by Laravel route, not direct file access
+    RewriteCond %{REQUEST_URI} ^/storage/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^storage(/.*)?$ - [F,L]
+     
+     # Block tests directory
+     RewriteRule ^tests(/.*)?$ - [F,L]
+     
+     # Block bootstrap directory (except cache for Laravel)
+     RewriteRule ^bootstrap/cache(/.*)?$ - [F,L]
+     
+     # Block app directory
+     RewriteRule ^app(/.*)?$ - [F,L]
+     
+     # Block config directory
+     RewriteRule ^config(/.*)?$ - [F,L]
+     
+     # Block database directory
+     RewriteRule ^database(/.*)?$ - [F,L]
+     
+     # Block resources directory
+     RewriteRule ^resources(/.*)?$ - [F,L]
+     
+     # Block routes directory
+     RewriteRule ^routes(/.*)?$ - [F,L]
+     
+     # Block lang directory
+     RewriteRule ^lang(/.*)?$ - [F,L]
+     
+     # Block node_modules
+     RewriteRule ^node_modules(/.*)?$ - [F,L]
+     
+     # Block any PHP file outside public folder
+     RewriteCond %{REQUEST_URI} !^/public/
+     RewriteRule \.php$ - [F,L]
+     
+     # Block README and documentation files
+     RewriteRule ^README\.md$ - [F,L]
+     RewriteRule ^SETUP_GUIDE\.md$ - [F,L]
+     RewriteRule ^CHANGELOG\.md$ - [F,L]
+     RewriteRule ^LICENSE$ - [F,L]
+     
+     # Block backup files
+     RewriteRule ^.*\.bak$ - [F,L]
+     RewriteRule ^.*\.backup$ - [F,L]
+     RewriteRule ^.*\.old$ - [F,L]
+     RewriteRule ^.*\.sql$ - [F,L]
+     RewriteRule ^.*\.sqlite$ - [F,L]
+     
+     # ==========================================================================
+     # SECTION 3: REWRITE TO PUBLIC FOLDER
+     # ==========================================================================
+     
+     # Handle Authorization Header
+     RewriteCond %{HTTP:Authorization} .
+     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+     
+     # Handle X-XSRF-Token Header
+     RewriteCond %{HTTP:x-xsrf-token} .
+     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+     
+     # If the request is for a real file/folder in public, serve it directly
+     RewriteCond %{REQUEST_URI} !^/public/
+     RewriteRule ^(.*)$ public/$1 [L]
+     
+     # Send remaining requests to front controller
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteRule ^ public/index.php [L]
+ </IfModule>
+ 
+ # =============================================================================
+ # SECTION 4: ADDITIONAL SECURITY HEADERS
+ # =============================================================================
+ <IfModule mod_headers.c>
+     # Prevent MIME type sniffing
+     Header always set X-Content-Type-Options "nosniff"
+     
+     # XSS Protection
+     Header always set X-XSS-Protection "1; mode=block"
+     
+     # Clickjacking protection
+     Header always set X-Frame-Options "SAMEORIGIN"
+     
+     # Referrer Policy
+     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+     
+     # Remove server signature
+     Header always unset X-Powered-By
+     Header always unset Server
+ </IfModule>
+ 
+ # =============================================================================
+ # SECTION 5: DISABLE DIRECTORY BROWSING
+ # =============================================================================
+ Options -Indexes
+ 
+ # =============================================================================
+ # SECTION 6: BLOCK ACCESS TO HIDDEN FILES
+ # =============================================================================
+ <FilesMatch "^\.">
+     Order allow,deny
+     Deny from all
+ </FilesMatch>
+ 
+ # =============================================================================
+ # SECTION 7: PROTECT SPECIFIC FILE TYPES
+ # =============================================================================
+ <FilesMatch "\.(env|log|sql|sqlite|yml|yaml|lock|bak|backup|old)$">
+     Order allow,deny
+     Deny from all
+ </FilesMatch>

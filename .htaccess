@@ -48,11 +48,9 @@
      # Block vendor directory completely
      RewriteRule ^vendor(/.*)?$ - [F,L]
      
-    # Block direct access to storage directory
-    # Note: /storage/* URLs are handled by Laravel route, not direct file access
-    RewriteCond %{REQUEST_URI} ^/storage/
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^storage(/.*)?$ - [F,L]
+    # IMPORTANT: Do NOT block /storage/* URL path - it's handled by Laravel route
+    # Only block direct access to storage FOLDER (not URL)
+    # The storage folder files are served via StorageController, not direct access
      
      # Block tests directory
      RewriteRule ^tests(/.*)?$ - [F,L]

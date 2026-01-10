@@ -53,11 +53,21 @@ class OrganizationStructureResource extends Resource
                 SchemaComponents\Section::make('Detail Anggota')
                     ->description('Masukkan informasi anggota struktur organisasi')
                     ->schema([
+                        FormComponents\TextInput::make('name')
+                            ->label('Nama Anggota')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Contoh: Budi Santoso'),
                         FormComponents\TextInput::make('position')
                             ->label('Jabatan')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Contoh: Ketua'),
+                        FormComponents\FileUpload::make('photo')
+                            ->label('Foto')
+                            ->directory('organization-structures')
+                            ->image()
+                            ->maxSize(2048),
                         FormComponents\Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(2)
@@ -82,9 +92,15 @@ class OrganizationStructureResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('position')
                     ->label('Jabatan')
                     ->searchable(),
+                Tables\Columns\ImageColumn::make('photo')
+                    ->label('Foto')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(50),

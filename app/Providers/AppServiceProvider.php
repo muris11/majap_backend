@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS in production (cPanel with SSL/proxy)
         if ($this->app->environment('production')) {
-            URL::forceScheme('https');
+            // // URL::forceScheme('https'); // Disabled for Cloudflare SSL
             
             // Trust proxy headers for cPanel/CloudFlare
             if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {

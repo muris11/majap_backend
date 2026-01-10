@@ -140,23 +140,41 @@ class ApiController extends Controller
                         return $this->formatOrganizationMember($member);
                     });
             } else {
-                // Find batch that has organization data, starting from latest
-                $batchesWithOrg = Batch::active()
+                // First try to find batch that has organization data
+                $batchWithOrg = Batch::active()
                     ->orderBy('year', 'desc')
                     ->whereHas('organizationStructures')
                     ->first();
                 
-                if ($batchesWithOrg) {
+                if ($batchWithOrg) {
                     return OrganizationStructure::with('batch')
                         ->ordered()
-                        ->where('batch_id', $batchesWithOrg->id)
+                        ->where('batch_id', $batchWithOrg->id)
                         ->get()
                         ->map(function ($member) {
                             return $this->formatOrganizationMember($member);
                         });
                 }
                 
-                return collect([]);
+                // If no batch has org data, get all org data without batch (batch_id is null)
+                $orgWithoutBatch = OrganizationStructure::with('batch')
+                    ->ordered()
+                    ->whereNull('batch_id')
+                    ->get();
+                
+                if ($orgWithoutBatch->isNotEmpty()) {
+                    return $orgWithoutBatch->map(function ($member) {
+                        return $this->formatOrganizationMember($member);
+                    });
+                }
+                
+                // Last resort: get ALL organization data regardless of batch
+                return OrganizationStructure::with('batch')
+                    ->ordered()
+                    ->get()
+                    ->map(function ($member) {
+                        return $this->formatOrganizationMember($member);
+                    });
             }
         });
 

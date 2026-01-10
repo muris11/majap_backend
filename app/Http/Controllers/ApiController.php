@@ -168,11 +168,19 @@ class ApiController extends Controller
 
     private function formatOrganizationMember($member): array
     {
+        // Map name to description so it appears on frontend
+        // If description exists, append it after name
+        $description = $member->name;
+        if ($member->description) {
+            $description .= ' - ' . $member->description;
+        }
+
         return [
             'id' => $member->id,
             'position' => $member->position,
+            'name' => $member->name, // Include name just in case
             'photo' => $member->photo ? asset(Storage::url($member->photo)) : null,
-            'description' => $member->description,
+            'description' => $description,
             'level' => $member->level,
             'order' => $member->order,
         ];
@@ -304,25 +312,38 @@ class ApiController extends Controller
             ], 404);
         }
 
-        $related = Activity::published()
+        // First try to get activities from the same batch
+        $related = Activity::with('batch')
+            ->published()
             ->where('id', '!=', $activity->id)
             ->where('batch_id', $activity->batch_id)
             ->orderBy('event_date', 'desc')
             ->limit(5)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'title' => $item->title,
-                    'slug' => $item->slug,
-                    'cover_image' => $item->cover_image ? asset(Storage::url($item->cover_image)) : null,
-                    'event_date_formatted' => $item->event_date->translatedFormat('d M Y'),
-                ];
-            });
+            ->get();
+
+        // If no related activities from same batch, get other activities
+        if ($related->isEmpty()) {
+            $related = Activity::with('batch')
+                ->published()
+                ->where('id', '!=', $activity->id)
+                ->orderBy('event_date', 'desc')
+                ->limit(5)
+                ->get();
+        }
+
+        $formattedRelated = $related->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'title' => $item->title,
+                'slug' => $item->slug,
+                'cover_image' => $item->cover_image ? asset(Storage::url($item->cover_image)) : null,
+                'event_date_formatted' => $item->event_date->translatedFormat('d M Y'),
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'data' => $related,
+            'data' => $formattedRelated,
         ]);
     }
 

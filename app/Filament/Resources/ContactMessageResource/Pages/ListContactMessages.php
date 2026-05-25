@@ -10,6 +10,11 @@ class ListContactMessages extends ListRecords
 {
     protected static string $resource = ContactMessageResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Pesan';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

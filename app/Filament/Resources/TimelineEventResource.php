@@ -16,6 +16,13 @@ class TimelineEventResource extends Resource
 {
     protected static ?string $model = TimelineEvent::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'description', 'location', 'batch.name'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
         return 'heroicon-o-clock';
@@ -28,7 +35,7 @@ class TimelineEventResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'Peristiwa';
+        return 'Event';
     }
 
     public static function getPluralModelLabel(): string
@@ -38,45 +45,72 @@ class TimelineEventResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 2;
+        return 5;
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Data Master';
+        return 'Konten';
     }
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                SchemaComponents\Section::make('Detail Peristiwa')
-                    ->description('Masukkan informasi peristiwa penting dalam sejarah organisasi')
+                SchemaComponents\Section::make('Detail Event')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
-                        FormComponents\TextInput::make('year')
-                            ->label('Tahun')
+                        FormComponents\Select::make('batch_id')
+                            ->label('Angkatan')
+                            ->relationship('batch', 'name')
                             ->required()
-                            ->numeric()
-                            ->minValue(1900)
-                            ->maxValue(2100)
-                            ->placeholder('Contoh: 2024'),
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Pilih Angkatan'),
                         FormComponents\TextInput::make('title')
-                            ->label('Judul')
+                            ->label('Judul Event')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('Masukkan judul peristiwa'),
-                        FormComponents\Textarea::make('description')
-                            ->label('Deskripsi')
-                            ->rows(3)
-                            ->columnSpanFull()
-                            ->placeholder('Jelaskan peristiwa yang terjadi...'),
-                        FormComponents\TextInput::make('order')
-                            ->label('Urutan')
-                            ->numeric()
-                            ->default(0)
-                            ->helperText('Urutan tampil pada linimasa (angka kecil tampil duluan)'),
+                            ->placeholder('Contoh: Dies Natalis ke-10'),
+                        FormComponents\DatePicker::make('event_date')
+                            ->label('Tanggal')
+                            ->required()
+                            ->placeholder('Pilih tanggal'),
+                        FormComponents\TextInput::make('location')
+                            ->label('Lokasi')
+                            ->maxLength(255)
+                            ->placeholder('Lokasi event'),
                     ])
                     ->columns(2),
+
+                SchemaComponents\Section::make('Konten')
+                    ->icon('heroicon-o-document-text')
+                    ->schema([
+                        FormComponents\Textarea::make('description')
+                            ->label('Deskripsi')
+                            ->required()
+                            ->rows(4)
+                            ->columnSpanFull()
+                            ->placeholder('Ceritakan tentang event ini...'),
+                        FormComponents\FileUpload::make('image')
+                            ->label('Gambar')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('timeline-events')
+                            ->imageEditor()
+                            ->openable()
+                            ->downloadable()
+                            ->previewable(true),
+                    ]),
+
+                SchemaComponents\Section::make('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->schema([
+                        FormComponents\Toggle::make('is_published')
+                            ->label('Publikasikan')
+                            ->default(true),
+                    ]),
             ]);
     }
 
@@ -84,44 +118,86 @@ class TimelineEventResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('year')
-                    ->label('Tahun')
-                    ->sortable(),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Gambar')
+                    ->disk('public')
+                    ->square()
+                    ->height(40)
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('order')
-                    ->label('Urutan')
+                    ->limit(40)
+                    ->weight('semibold'),
+                Tables\Columns\TextColumn::make('event_date')
+                    ->label('Tanggal')
+                    ->date('d M Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('batch.name')
+                    ->label('Angkatan')
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('location')
+                    ->label('Lokasi')
+                    ->limit(20)
+                    ->toggleable()
+                    ->placeholder('-'),
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('Publikasi')
+                    ->boolean()
+                    ->toggleable(),
             ])
-            ->defaultSort('order')
-            ->reorderable('order')
+            ->defaultSort('event_date', 'desc')
+            ->striped()
+            ->filters([
+                Tables\Filters\SelectFilter::make('batch')
+                    ->relationship('batch', 'name')
+                    ->label('Angkatan')
+                    ->placeholder('Semua')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Status Publikasi')
+                    ->placeholder('Semua')
+                    ->trueLabel('Dipublikasikan')
+                    ->falseLabel('Tidak Dipublikasikan'),
+            ])
             ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Peristiwa')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus peristiwa ini dari linimasa? Tindakan ini tidak dapat dibatalkan.')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
-            ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make()
-                        ->label('Hapus Terpilih')
-                        ->modalHeading('Hapus Peristiwa Terpilih')
-                        ->modalDescription('Apakah Anda yakin ingin menghapus peristiwa yang dipilih? Tindakan ini tidak dapat dibatalkan.')
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('togglePublished')
+                        ->label(fn (TimelineEvent $record) => $record->is_published ? 'Tarik Publikasi' : 'Publikasikan')
+                        ->icon('heroicon-o-eye')
+                        ->color(fn (TimelineEvent $record) => $record->is_published ? 'warning' : 'success')
+                        ->action(fn (TimelineEvent $record) => $record->update(['is_published' => !$record->is_published])),
+                    Actions\ViewAction::make()
+                        ->label('Lihat')
+                        ->modalHeading('Detail Event'),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Event')
                         ->modalSubmitActionLabel('Ya, Hapus')
                         ->modalCancelActionLabel('Batal'),
                 ]),
             ])
-            ->emptyStateHeading('Belum Ada Peristiwa')
-            ->emptyStateDescription('Mulai tambahkan peristiwa penting dalam linimasa organisasi.')
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('togglePublished')
+                        ->label('Publikasikan')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_published' => true]))),
+                    Actions\DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->modalHeading('Hapus Event Terpilih')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
+            ])
+            ->emptyStateHeading('Belum Ada Event')
+            ->emptyStateDescription('Tambahkan event untuk linimasa angkatan.')
             ->emptyStateActions([
                 Actions\CreateAction::make()
-                    ->label('Tambah Peristiwa'),
+                    ->label('Tambah Event'),
             ]);
     }
 

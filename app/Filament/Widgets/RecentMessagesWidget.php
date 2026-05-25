@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\ContactMessage;
+use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -10,8 +11,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class RecentMessagesWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
-    
-    protected int | string | array $columnSpan = 1;
+
+    protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -23,23 +24,35 @@ class RecentMessagesWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Pengirim')
-                    ->weight('bold'),
-                    
+                    ->label('Nama')
+                    ->weight('semibold'),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
+                    ->copyable()
+                    ->copyMessage('Email disalin'),
                 Tables\Columns\TextColumn::make('subject')
                     ->label('Subjek')
-                    ->limit(25),
-                    
+                    ->limit(40)
+                    ->searchable(),
                 Tables\Columns\IconColumn::make('is_read')
-                    ->label('')
+                    ->label('Dibaca')
                     ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-envelope')
-                    ->trueColor('success')
-                    ->falseColor('warning'),
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Diterima')
+                    ->since()
+                    ->sortable(),
             ])
             ->heading('Pesan Terbaru')
-            ->defaultSort('created_at', 'desc')
+            ->description('5 pesan terbaru dari pengunjung')
+            ->actions([
+                Action::make('markRead')
+                    ->label('Tandai Dibaca')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->action(fn (ContactMessage $record) => $record->update(['is_read' => true]))
+                    ->visible(fn (ContactMessage $record) => !$record->is_read),
+            ])
             ->paginated(false);
     }
 }

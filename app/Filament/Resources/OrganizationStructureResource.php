@@ -16,9 +16,16 @@ class OrganizationStructureResource extends Resource
 {
     protected static ?string $model = OrganizationStructure::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'position', 'description'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
-        return 'heroicon-o-user-group';
+        return 'heroicon-o-rectangle-group';
     }
 
     public static function getNavigationLabel(): string
@@ -38,12 +45,12 @@ class OrganizationStructureResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 3;
+        return 4;
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Data Master';
+        return 'Konten';
     }
 
     public static function form(Schema $schema): Schema
@@ -51,40 +58,72 @@ class OrganizationStructureResource extends Resource
         return $schema
             ->components([
                 SchemaComponents\Section::make('Detail Anggota')
-                    ->description('Masukkan informasi anggota struktur organisasi')
+                    ->icon('heroicon-o-user')
                     ->schema([
-                        FormComponents\TextInput::make('name')
-                            ->label('Nama Anggota')
+                        FormComponents\Select::make('batch_id')
+                            ->label('Angkatan')
+                            ->relationship('batch', 'name')
                             ->required()
-                            ->maxLength(255)
-                            ->placeholder('Contoh: Budi Santoso'),
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Pilih Angkatan'),
                         FormComponents\TextInput::make('position')
                             ->label('Jabatan')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Contoh: Ketua'),
-                        FormComponents\FileUpload::make('photo')
-                            ->label('Foto')
-                            ->directory('organization-structures')
-                            ->image()
-                            ->maxSize(2048),
+                        FormComponents\TextInput::make('name')
+                            ->label('Nama')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Nama lengkap'),
                         FormComponents\Textarea::make('description')
                             ->label('Deskripsi')
-                            ->rows(2)
+                            ->rows(3)
                             ->columnSpanFull()
-                            ->placeholder('Deskripsi tugas atau keterangan tambahan...'),
-                        FormComponents\TextInput::make('level')
-                            ->label('Level Hierarki')
-                            ->numeric()
-                            ->default(0)
-                            ->helperText('0 = Pimpinan, 1 = Wakil, 2 = Divisi, dst'),
+                            ->placeholder('Deskripsi anggota...'),
+                    ])
+                    ->columns(2),
+
+                SchemaComponents\Section::make('Foto')
+                    ->icon('heroicon-o-photo')
+                    ->schema([
+                        FormComponents\FileUpload::make('photo')
+                            ->label('Foto')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('organization-structures')
+                            ->imageEditor()
+                            ->openable()
+                            ->downloadable()
+                            ->previewable(true)
+                            ->columnSpanFull(),
+                    ]),
+
+                SchemaComponents\Section::make('Urutan & Level')
+                    ->icon('heroicon-o-list-bullet')
+                    ->schema([
                         FormComponents\TextInput::make('order')
                             ->label('Urutan')
                             ->numeric()
                             ->default(0)
-                            ->helperText('Urutan tampil dalam level yang sama'),
+                            ->helperText('Urutan dalam level yang sama'),
+                        FormComponents\TextInput::make('level')
+                            ->label('Level')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('0=Pembina, 1=Ketua, 2=Wakil, 3=Anggota'),
                     ])
                     ->columns(2),
+
+                SchemaComponents\Section::make('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->schema([
+                        FormComponents\Toggle::make('is_active')
+                            ->label('Tampilkan')
+                            ->default(true),
+                    ]),
             ]);
     }
 
@@ -92,50 +131,86 @@ class OrganizationStructureResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('position')
-                    ->label('Jabatan')
-                    ->searchable(),
                 Tables\Columns\ImageColumn::make('photo')
                     ->label('Foto')
-                    ->circular(),
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
-                    ->limit(50),
+                    ->disk('public')
+                    ->circular()
+                    ->height(40),
+                Tables\Columns\TextColumn::make('position')
+                    ->label('Jabatan')
+                    ->searchable()
+                    ->badge()
+                    ->color('primary'),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
+                    ->searchable()
+                    ->weight('semibold'),
+                Tables\Columns\TextColumn::make('batch.name')
+                    ->label('Angkatan')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('level')
                     ->label('Level')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignment('center')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('order')
                     ->label('Urutan')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignment('center')
+                    ->toggleable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Aktif')
+                    ->boolean()
+                    ->sortable()
+                    ->toggleable(),
             ])
-            ->defaultSort('level')
+            ->defaultSort('level', 'asc')
             ->reorderable('order')
-            ->filters([])
-            ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Anggota')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus anggota ini dari struktur organisasi?')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
+            ->striped()
+            ->filters([
+                Tables\Filters\SelectFilter::make('batch')
+                    ->relationship('batch', 'name')
+                    ->label('Angkatan')
+                    ->placeholder('Semua')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Status')
+                    ->placeholder('Semua')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif'),
             ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make()
-                        ->label('Hapus Terpilih')
-                        ->modalHeading('Hapus Anggota Terpilih')
-                        ->modalDescription('Apakah Anda yakin ingin menghapus anggota yang dipilih?')
+            ->actions([
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('toggleActive')
+                        ->label(fn (OrganizationStructure $record) => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
+                        ->icon('heroicon-o-power')
+                        ->color(fn (OrganizationStructure $record) => $record->is_active ? 'warning' : 'success')
+                        ->action(fn (OrganizationStructure $record) => $record->update(['is_active' => !$record->is_active])),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Anggota')
                         ->modalSubmitActionLabel('Ya, Hapus')
                         ->modalCancelActionLabel('Batal'),
                 ]),
             ])
-            ->emptyStateHeading('Belum Ada Struktur Organisasi')
-            ->emptyStateDescription('Mulai tambahkan anggota struktur organisasi.')
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('toggleActive')
+                        ->label('Aktifkan')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_active' => true]))),
+                    Actions\DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->modalHeading('Hapus Anggota Terpilih')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
+            ])
+            ->emptyStateHeading('Belum Ada Struktur')
+            ->emptyStateDescription('Tambahkan anggota struktur organisasi angkatan.')
             ->emptyStateActions([
                 Actions\CreateAction::make()
                     ->label('Tambah Anggota'),

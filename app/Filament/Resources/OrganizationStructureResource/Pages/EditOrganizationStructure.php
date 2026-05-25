@@ -10,6 +10,11 @@ class EditOrganizationStructure extends EditRecord
 {
     protected static string $resource = OrganizationStructureResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Struktur Organisasi';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

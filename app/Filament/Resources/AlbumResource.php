@@ -17,6 +17,13 @@ class AlbumResource extends Resource
 {
     protected static ?string $model = Album::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'description', 'batch.name', 'activity.title'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
         return 'heroicon-o-photo';
@@ -52,6 +59,7 @@ class AlbumResource extends Resource
         return $schema
             ->components([
                 SchemaComponents\Section::make('Info Album')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         FormComponents\Select::make('batch_id')
                             ->label('Angkatan')
@@ -88,8 +96,8 @@ class AlbumResource extends Resource
                     ])
                     ->columns(2),
 
-                SchemaComponents\Section::make('Cover')
-                    ->description('Unggah gambar cover untuk album')
+                SchemaComponents\Section::make('Cover & Publikasi')
+                    ->icon('heroicon-o-camera')
                     ->schema([
                         FormComponents\FileUpload::make('cover_image')
                             ->label('Gambar Cover')
@@ -107,6 +115,7 @@ class AlbumResource extends Resource
                     ]),
 
                 SchemaComponents\Section::make('Foto-foto')
+                    ->icon('heroicon-o-photo')
                     ->description('Kelola foto-foto dalam album ini')
                     ->schema([
                         FormComponents\Repeater::make('photos')
@@ -149,31 +158,39 @@ class AlbumResource extends Resource
                 Tables\Columns\ImageColumn::make('cover_image')
                     ->label('Cover')
                     ->disk('public')
-                    ->square(),
+                    ->square()
+                    ->height(48),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
-                    ->limit(40),
+                    ->limit(40)
+                    ->weight('semibold'),
                 Tables\Columns\TextColumn::make('batch.name')
                     ->label('Angkatan')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('activity.title')
                     ->label('Kegiatan')
                     ->limit(30)
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('photos_count')
                     ->label('Foto')
-                    ->counts('photos'),
+                    ->counts('photos')
+                    ->alignment('center'),
                 Tables\Columns\IconColumn::make('is_published')
-                    ->label('Dipublikasikan')
-                    ->boolean(),
+                    ->label('Publikasi')
+                    ->boolean()
+                    ->toggleable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->striped()
             ->filters([
                 Tables\Filters\SelectFilter::make('batch')
                     ->relationship('batch', 'name')
                     ->label('Angkatan')
-                    ->placeholder('Semua Angkatan'),
+                    ->placeholder('Semua Angkatan')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TernaryFilter::make('is_published')
                     ->label('Dipublikasikan')
                     ->placeholder('Semua')
@@ -181,17 +198,27 @@ class AlbumResource extends Resource
                     ->falseLabel('Tidak'),
             ])
             ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Album')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus album ini beserta semua fotonya? Tindakan ini tidak dapat dibatalkan.')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('togglePublished')
+                        ->label(fn (Album $record) => $record->is_published ? 'Tarik Publikasi' : 'Publikasikan')
+                        ->icon('heroicon-o-eye')
+                        ->color(fn (Album $record) => $record->is_published ? 'warning' : 'success')
+                        ->action(fn (Album $record) => $record->update(['is_published' => !$record->is_published])),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Album')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus album ini beserta semua fotonya? Tindakan ini tidak dapat dibatalkan.')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('togglePublished')
+                        ->label('Publikasikan')
+                        ->icon('heroicon-o-eye')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_published' => true]))),
                     Actions\DeleteBulkAction::make()
                         ->label('Hapus Terpilih')
                         ->modalHeading('Hapus Album Terpilih')

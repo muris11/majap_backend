@@ -10,6 +10,11 @@ class EditAlbum extends EditRecord
 {
     protected static string $resource = AlbumResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Album';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

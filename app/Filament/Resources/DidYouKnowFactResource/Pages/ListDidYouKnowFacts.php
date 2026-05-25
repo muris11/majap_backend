@@ -8,9 +8,14 @@
  
  class ListDidYouKnowFacts extends ListRecords
  {
-     protected static string $resource = DidYouKnowFactResource::class;
- 
-     protected function getHeaderActions(): array
+    protected static string $resource = DidYouKnowFactResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Daftar Fakta';
+    }
+
+    protected function getHeaderActions(): array
      {
          return [
              Actions\CreateAction::make()

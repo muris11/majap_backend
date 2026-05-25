@@ -10,6 +10,11 @@ class EditBatch extends EditRecord
 {
     protected static string $resource = BatchResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Batch';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

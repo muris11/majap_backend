@@ -10,6 +10,11 @@ class ListHeroSlides extends ListRecords
 {
     protected static string $resource = HeroSlideResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Slide';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

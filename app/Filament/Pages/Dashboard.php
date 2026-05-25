@@ -21,6 +21,11 @@ class Dashboard extends BaseDashboard
         return 'heroicon-o-home';
     }
 
+    public function getTitle(): string
+    {
+        return 'Dashboard';
+    }
+
     public function getHeading(): string
     {
         return '';

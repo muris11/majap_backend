@@ -56,6 +56,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/albums/{slug}', [ApiController::class, 'albumDetail']);
     Route::get('/albums/{slug}/others', [ApiController::class, 'albumsOther']);
 
+    // FAQ
+    Route::get('/faqs', [ApiController::class, 'faqs']);
+
+    // Suggestions
+    Route::post('/suggestions', [ApiController::class, 'suggestion']);
+
+    // Newsletter
+    Route::post('/newsletter/subscribe', [ApiController::class, 'newsletterSubscribe']);
+
     // Contact
     Route::post('/contact', [ApiController::class, 'contact']);
 

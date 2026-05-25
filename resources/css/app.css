@@ -10,23 +10,21 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Filament Admin Panel Enhancements */
 @media (max-width: 640px) {
     .fi-topbar {
         padding-left: 0.75rem !important;
         padding-right: 0.75rem !important;
     }
-    
+
     .fi-section {
         padding: 1rem !important;
     }
-    
+
     .fi-header-heading {
         font-size: 1.25rem !important;
     }
 }
 
-/* Smooth transitions for better UX */
 .fi-sidebar,
 .fi-btn,
 .fi-section,
@@ -34,10 +32,27 @@
     transition: all 0.2s ease-in-out;
 }
 
-/* Better focus states for accessibility */
 .fi-input:focus,
 .fi-select:focus,
 .fi-textarea:focus {
     outline: 2px solid rgb(96, 108, 56);
     outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media print {
+    .fi-sidebar,
+    .fi-topbar,
+    .fi-header {
+        display: none !important;
+    }
 }

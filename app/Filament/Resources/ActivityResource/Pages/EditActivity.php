@@ -10,6 +10,11 @@ class EditActivity extends EditRecord
 {
     protected static string $resource = ActivityResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Kegiatan';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

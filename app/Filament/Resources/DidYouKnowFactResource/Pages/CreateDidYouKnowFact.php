@@ -7,9 +7,14 @@
  
  class CreateDidYouKnowFact extends CreateRecord
  {
-     protected static string $resource = DidYouKnowFactResource::class;
- 
-     protected function getRedirectUrl(): string
+    protected static string $resource = DidYouKnowFactResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Tambah Fakta';
+    }
+
+    protected function getRedirectUrl(): string
      {
          return $this->getResource()::getUrl('index');
      }

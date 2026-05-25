@@ -27,9 +27,9 @@
                     tag="a" 
                     href="{{ route('filament.admin.resources.activities.create') }}" 
                     size="sm" 
-                    icon="heroicon-o-plus" 
-                    color="gray"
-                    class="bg-white/15 hover:bg-white/25 border-white/20 backdrop-blur-sm transition-all duration-200"
+                    color="white"
+                    outlined
+                    class="border-white/30 backdrop-blur-sm transition-all duration-200"
                 >
                     <span class="hidden sm:inline">Kegiatan Baru</span>
                     <span class="sm:hidden">Kegiatan</span>
@@ -39,8 +39,9 @@
                     href="{{ route('filament.admin.resources.contact-messages.index') }}" 
                     size="sm" 
                     icon="heroicon-o-envelope" 
-                    color="gray"
-                    class="bg-white/15 hover:bg-white/25 border-white/20 backdrop-blur-sm transition-all duration-200"
+                    color="white"
+                    outlined
+                    class="border-white/30 backdrop-blur-sm transition-all duration-200"
                 >
                     Pesan
                 </x-filament::button>

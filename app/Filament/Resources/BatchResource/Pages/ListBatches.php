@@ -10,6 +10,11 @@ class ListBatches extends ListRecords
 {
     protected static string $resource = BatchResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Batch';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

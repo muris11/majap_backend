@@ -10,6 +10,11 @@ class EditTimelineEvent extends EditRecord
 {
     protected static string $resource = TimelineEventResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Timeline Event';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

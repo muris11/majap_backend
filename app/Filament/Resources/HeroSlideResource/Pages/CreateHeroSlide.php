@@ -9,6 +9,11 @@ class CreateHeroSlide extends CreateRecord
 {
     protected static string $resource = HeroSlideResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Tambah Slide';
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

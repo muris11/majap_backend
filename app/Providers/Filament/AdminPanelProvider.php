@@ -12,7 +12,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Navigation\NavigationGroup;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -43,18 +42,30 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('logo-small.png'))
             ->brandLogoHeight('2.5rem')
             ->favicon('/favicon.png')
-            ->darkMode(false)
+            ->darkMode(true)
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('13.5rem')
+            ->collapsedSidebarWidth('3.5rem')
+            ->breadcrumbs(true)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('10s')
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Beranda'),
+                    ->label('Beranda')
+                    ->icon('heroicon-o-home'),
                 NavigationGroup::make()
-                    ->label('Konten'),
+                    ->label('Konten')
+                    ->icon('heroicon-o-document-text'),
                 NavigationGroup::make()
-                    ->label('Data Master'),
+                    ->label('Interaksi')
+                    ->icon('heroicon-o-chat-bubble-left-right'),
                 NavigationGroup::make()
-                    ->label('Pengaturan'),
+                    ->label('Data Master')
+                    ->icon('heroicon-o-circle-stack'),
+                NavigationGroup::make()
+                    ->label('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

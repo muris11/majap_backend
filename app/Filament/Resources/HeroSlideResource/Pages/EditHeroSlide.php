@@ -10,6 +10,11 @@ class EditHeroSlide extends EditRecord
 {
     protected static string $resource = HeroSlideResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Ubah Slide';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -15,11 +15,13 @@ class OrganizationStructure extends Model
         'description',
         'order',
         'level',
+        'is_active',
     ];
 
     protected $casts = [
         'order' => 'integer',
         'level' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function batch(): BelongsTo

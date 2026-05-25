@@ -26,6 +26,7 @@ class CacheVersionService
             'organization' => 1,
             'activities' => 1,
             'albums' => 1,
+            'faqs' => 1,
             'schema' => 1,
         ]);
     }
@@ -70,6 +71,7 @@ class CacheVersionService
             'organization' => ['organization_latest'],
             'activities' => [],
             'albums' => [],
+            'faqs' => ['faqs'],
         ];
 
         foreach ($cacheKeys[$resource] ?? [] as $key) {

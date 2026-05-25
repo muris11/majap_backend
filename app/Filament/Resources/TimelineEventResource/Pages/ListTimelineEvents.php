@@ -10,6 +10,11 @@ class ListTimelineEvents extends ListRecords
 {
     protected static string $resource = TimelineEventResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Timeline Event';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

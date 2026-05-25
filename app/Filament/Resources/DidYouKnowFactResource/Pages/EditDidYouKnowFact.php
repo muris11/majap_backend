@@ -8,9 +8,14 @@
  
  class EditDidYouKnowFact extends EditRecord
  {
-     protected static string $resource = DidYouKnowFactResource::class;
- 
-     protected function getHeaderActions(): array
+    protected static string $resource = DidYouKnowFactResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Ubah Fakta';
+    }
+
+    protected function getHeaderActions(): array
      {
          return [
              Actions\DeleteAction::make()

@@ -9,6 +9,11 @@ class CreateTimelineEvent extends CreateRecord
 {
     protected static string $resource = TimelineEventResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Tambah Timeline Event';
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

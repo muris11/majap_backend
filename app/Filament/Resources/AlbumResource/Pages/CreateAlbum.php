@@ -9,6 +9,11 @@ class CreateAlbum extends CreateRecord
 {
     protected static string $resource = AlbumResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Tambah Album';
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

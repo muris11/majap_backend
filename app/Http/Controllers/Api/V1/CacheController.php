@@ -41,7 +41,7 @@ class CacheController extends BaseApiController
     {
         $validated = $request->validate([
             'resources' => 'required|array',
-            'resources.*' => 'string|in:settings,hero_slides,did_you_know,timeline,batches,organization,activities,albums,schema',
+            'resources.*' => 'string|in:settings,hero_slides,did_you_know,timeline,batches,organization,activities,albums,schema,faqs',
         ]);
 
         $versions = $this->cacheVersionService->incrementMultiple($validated['resources']);

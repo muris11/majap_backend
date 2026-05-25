@@ -17,6 +17,13 @@ class ActivityResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'short_description', 'location', 'batch.name'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
         return 'heroicon-o-calendar-days';
@@ -52,6 +59,7 @@ class ActivityResource extends Resource
         return $schema
             ->components([
                 SchemaComponents\Section::make('Info Kegiatan')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         FormComponents\Select::make('batch_id')
                             ->label('Angkatan')
@@ -92,6 +100,7 @@ class ActivityResource extends Resource
                     ->columns(2),
 
                 SchemaComponents\Section::make('Gambar Cover')
+                    ->icon('heroicon-o-photo')
                     ->schema([
                         FormComponents\FileUpload::make('cover_image')
                             ->label('Gambar Cover')
@@ -107,6 +116,7 @@ class ActivityResource extends Resource
                     ]),
 
                 SchemaComponents\Section::make('Konten Lengkap')
+                    ->icon('heroicon-o-document-text')
                     ->schema([
                         FormComponents\RichEditor::make('content')
                             ->label('Narasi Kegiatan')
@@ -133,6 +143,7 @@ class ActivityResource extends Resource
                     ]),
 
                 SchemaComponents\Section::make('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
                     ->schema([
                         FormComponents\Toggle::make('is_featured')
                             ->label('Tampilkan di Beranda')
@@ -152,31 +163,43 @@ class ActivityResource extends Resource
                 Tables\Columns\ImageColumn::make('cover_image')
                     ->label('Cover')
                     ->disk('public')
-                    ->square(),
+                    ->square()
+                    ->height(48),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
-                    ->limit(40),
+                    ->limit(40)
+                    ->weight('semibold'),
                 Tables\Columns\TextColumn::make('batch.name')
                     ->label('Angkatan')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('event_date')
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('location')
+                    ->label('Lokasi')
+                    ->limit(20)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_featured')
                     ->label('Unggulan')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_published')
-                    ->label('Dipublikasikan')
-                    ->boolean(),
+                    ->label('Publikasi')
+                    ->boolean()
+                    ->toggleable(),
             ])
             ->defaultSort('event_date', 'desc')
+            ->striped()
             ->filters([
                 Tables\Filters\SelectFilter::make('batch')
                     ->relationship('batch', 'name')
                     ->label('Angkatan')
-                    ->placeholder('Semua Angkatan'),
+                    ->placeholder('Semua Angkatan')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TernaryFilter::make('is_featured')
                     ->label('Unggulan')
                     ->placeholder('Semua')
@@ -189,17 +212,32 @@ class ActivityResource extends Resource
                     ->falseLabel('Tidak'),
             ])
             ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Kegiatan')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus kegiatan ini? Tindakan ini tidak dapat dibatalkan.')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('togglePublished')
+                        ->label(fn (Activity $record) => $record->is_published ? 'Tarik Publikasi' : 'Publikasikan')
+                        ->icon(fn (Activity $record) => $record->is_published ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                        ->color(fn (Activity $record) => $record->is_published ? 'warning' : 'success')
+                        ->action(fn (Activity $record) => $record->update(['is_published' => !$record->is_published])),
+                    Actions\Action::make('toggleFeatured')
+                        ->label(fn (Activity $record) => $record->is_featured ? 'Hapus Unggulan' : 'Jadikan Unggulan')
+                        ->icon(fn (Activity $record) => $record->is_featured ? 'heroicon-o-star' : 'heroicon-o-star')
+                        ->color(fn (Activity $record) => $record->is_featured ? 'gray' : 'warning')
+                        ->action(fn (Activity $record) => $record->update(['is_featured' => !$record->is_featured])),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Kegiatan')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus kegiatan ini? Tindakan ini tidak dapat dibatalkan.')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('togglePublished')
+                        ->label('Publikasikan/Tarik')
+                        ->icon('heroicon-o-eye')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_published' => true]))),
                     Actions\DeleteBulkAction::make()
                         ->label('Hapus Terpilih')
                         ->modalHeading('Hapus Kegiatan Terpilih')

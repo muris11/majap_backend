@@ -10,6 +10,11 @@ class ListAlbums extends ListRecords
 {
     protected static string $resource = AlbumResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Album';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

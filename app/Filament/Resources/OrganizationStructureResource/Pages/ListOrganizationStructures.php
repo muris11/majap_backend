@@ -10,6 +10,11 @@ class ListOrganizationStructures extends ListRecords
 {
     protected static string $resource = OrganizationStructureResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Struktur Organisasi';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

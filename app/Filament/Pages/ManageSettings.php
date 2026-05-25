@@ -22,7 +22,10 @@ class ManageSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 100;
 
-    public ?array $data = [];
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Pengaturan';
+    }
 
     public static function getNavigationIcon(): ?string
     {
@@ -44,12 +47,12 @@ class ManageSettings extends Page implements HasForms
         return 'filament.pages.manage-settings';
     }
 
+    public ?array $data = [];
+
     public function mount(): void
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
 
-        // Don't load existing image to avoid loading issues
-        // User will need to re-upload if they want to change
         if (isset($settings['about_image'])) {
             unset($settings['about_image']);
         }
@@ -84,58 +87,78 @@ class ManageSettings extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('Gambar')
-                    ->description('Gambar yang ditampilkan di website')
+                Section::make('Gambar Website')
+                    ->description('Upload gambar yang akan ditampilkan di halaman website')
+                    ->icon('heroicon-o-photo')
                     ->schema([
                         Placeholder::make('current_image')
                             ->label('Gambar Tentang (Beranda)')
                             ->content(function () {
                                 $url = $this->getAboutImageUrl();
                                 if ($url) {
-                                    return new HtmlString('<img src="'.$url.'" alt="Current Image" style="max-width: 200px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">');
+                                    return new HtmlString(
+                                        '<img src="'.$url.'" alt="Current Image" '.
+                                        'style="max-width:200px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">'
+                                    );
                                 }
-
-                                return 'Belum ada gambar';
+                                return new HtmlString(
+                                    '<span style="color:#9ca3af;">Belum ada gambar</span>'
+                                );
                             }),
                         FileUpload::make('about_image')
-                            ->label('Upload Gambar Tentang (Beranda)')
-                            ->helperText('Gambar di section Tentang pada halaman utama')
+                            ->label('Upload Gambar Baru')
+                            ->helperText('Gambar untuk section Tentang pada halaman utama. Format: JPG, PNG, WebP. Maks: 2MB')
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->disk('public')
                             ->visibility('public')
-                            ->directory('settings'),
+                            ->directory('settings')
+                            ->removeUploadedFileButtonPosition('right')
+                            ->imagePreviewHeight(150),
                         Placeholder::make('current_about_page_image')
                             ->label('Gambar Halaman Tentang')
                             ->content(function () {
                                 $url = $this->getAboutPageImageUrl();
                                 if ($url) {
-                                    return new HtmlString('<img src="'.$url.'" alt="Current Image" style="max-width: 200px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">');
+                                    return new HtmlString(
+                                        '<img src="'.$url.'" alt="Current Image" '.
+                                        'style="max-width:200px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">'
+                                    );
                                 }
-
-                                return 'Belum ada gambar';
+                                return new HtmlString(
+                                    '<span style="color:#9ca3af;">Belum ada gambar</span>'
+                                );
                             }),
                         FileUpload::make('about_page_image')
-                            ->label('Upload Gambar Halaman Tentang')
-                            ->helperText('Gambar di halaman Tentang Kami (Visi & Misi)')
+                            ->label('Upload Gambar Baru')
+                            ->helperText('Gambar untuk halaman Tentang Kami (Visi & Misi). Format: JPG, PNG, WebP. Maks: 2MB')
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->disk('public')
                             ->visibility('public')
-                            ->directory('settings'),
+                            ->directory('settings')
+                            ->removeUploadedFileButtonPosition('right')
+                            ->imagePreviewHeight(150),
                     ]),
+
                 Section::make('Statistik')
-                    ->description('Data statistik yang ditampilkan di website')
+                    ->description('Data statistik yang ditampilkan di halaman depan website')
+                    ->icon('heroicon-o-chart-bar')
                     ->schema([
                         TextInput::make('active_members')
                             ->label('Jumlah Anggota Aktif')
-                            ->placeholder('150+'),
+                            ->helperText('Contoh: 150+')
+                            ->placeholder('150+')
+                            ->prefixIcon('heroicon-o-users'),
                         TextInput::make('established_year')
                             ->label('Tahun Berdiri')
-                            ->placeholder('2015'),
-                    ]),
+                            ->helperText('Contoh: 2015')
+                            ->placeholder('2015')
+                            ->prefixIcon('heroicon-o-calendar'),
+                    ])
+                    ->columns(2),
             ])
             ->statePath('data');
     }
@@ -145,7 +168,8 @@ class ManageSettings extends Page implements HasForms
         return [
             Action::make('save')
                 ->label('Simpan Pengaturan')
-                ->submit('save'),
+                ->submit('save')
+                ->icon('heroicon-o-check'),
         ];
     }
 
@@ -188,6 +212,7 @@ class ManageSettings extends Page implements HasForms
 
         Notification::make()
             ->title('Pengaturan berhasil disimpan')
+            ->body('Perubahan akan langsung terlihat di website.')
             ->success()
             ->send();
     }

@@ -38,7 +38,7 @@ class SettingSeeder extends Seeder
             ['key' => 'history', 'value' => 'MAJAP (Mahasiswa Jabodetabek Politeknik Indramayu) didirikan sebagai wadah bagi mahasiswa yang berasal dari wilayah Jakarta, Bogor, Depok, Tangerang, dan Bekasi untuk saling mengenal, bertukar informasi, dan mengembangkan diri bersama selama menempuh pendidikan di Politeknik Negeri Indramayu.', 'type' => 'textarea', 'group' => 'about'],
             
             // Contact
-            ['key' => 'contact_email', 'value' => 'majap@polindra.ac.id', 'type' => 'text', 'group' => 'contact'],
+            ['key' => 'contact_email', 'value' => 'majapolindra@gmail.com', 'type' => 'text', 'group' => 'contact'],
             ['key' => 'contact_phone', 'value' => '+62 812 3456 7890', 'type' => 'text', 'group' => 'contact'],
             ['key' => 'address', 'value' => 'Politeknik Negeri Indramayu, Jl. Lohbener Lama No.08, Legok, Kec. Lohbener, Kabupaten Indramayu, Jawa Barat 45252', 'type' => 'textarea', 'group' => 'contact'],
             ['key' => 'map_embed_url', 'value' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.0!2d107.9!3d-6.3!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMTgnMDAuMCJTIDEwN8KwNTQnMDAuMCJF!5e0!3m2!1sen!2sid!4v1234567890', 'type' => 'text', 'group' => 'contact'],

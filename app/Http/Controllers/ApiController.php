@@ -7,9 +7,12 @@ use App\Models\Album;
 use App\Models\Batch;
 use App\Models\ContactMessage;
 use App\Models\DidYouKnowFact;
+use App\Models\Faq;
 use App\Models\HeroSlide;
+use App\Models\NewsletterSubscription;
 use App\Models\OrganizationStructure;
 use App\Models\Setting;
+use App\Models\Suggestion;
 use App\Models\TimelineEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -525,6 +528,58 @@ class ApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.',
+        ], 201);
+    }
+
+    /**
+     * Get FAQ list
+     */
+    public function faqs(): JsonResponse
+    {
+        $faqs = Cache::remember('faqs', 3600, function () {
+            return Faq::active()
+                ->ordered()
+                ->get(['id', 'question', 'answer', 'order']);
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $faqs,
+        ]);
+    }
+
+    /**
+     * Submit anonymous suggestion
+     */
+    public function suggestion(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'content' => 'required|string|max:5000',
+            'category' => 'nullable|string|max:100',
+        ]);
+
+        $suggestion = Suggestion::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Saran Anda telah terkirim. Terima kasih atas masukannya!',
+        ], 201);
+    }
+
+    /**
+     * Subscribe to newsletter
+     */
+    public function newsletterSubscribe(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:255|unique:newsletter_subscriptions,email',
+        ]);
+
+        NewsletterSubscription::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil berlangganan buletin!',
         ], 201);
     }
 }

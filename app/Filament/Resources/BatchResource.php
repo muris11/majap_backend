@@ -16,6 +16,13 @@ class BatchResource extends Resource
 {
     protected static ?string $model = Batch::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'description'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
         return 'heroicon-o-academic-cap';
@@ -51,6 +58,7 @@ class BatchResource extends Resource
         return $schema
             ->components([
                 SchemaComponents\Section::make('Detail Angkatan')
+                    ->icon('heroicon-o-academic-cap')
                     ->description('Masukkan informasi angkatan mahasiswa')
                     ->schema([
                         FormComponents\TextInput::make('name')
@@ -87,19 +95,26 @@ class BatchResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('semibold'),
                 Tables\Columns\TextColumn::make('year')
                     ->label('Tahun')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignment('center'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Aktif')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('activities_count')
                     ->label('Kegiatan')
-                    ->counts('activities'),
+                    ->counts('activities')
+                    ->alignment('center')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('albums_count')
                     ->label('Album')
-                    ->counts('albums'),
+                    ->counts('albums')
+                    ->alignment('center')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
@@ -107,6 +122,7 @@ class BatchResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('year', 'desc')
+            ->striped()
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Status Aktif')
@@ -115,17 +131,27 @@ class BatchResource extends Resource
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Angkatan')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus angkatan ini? Semua data kegiatan dan album terkait mungkin terpengaruh.')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('toggleActive')
+                        ->label(fn (Batch $record) => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
+                        ->icon('heroicon-o-power')
+                        ->color(fn (Batch $record) => $record->is_active ? 'warning' : 'success')
+                        ->action(fn (Batch $record) => $record->update(['is_active' => !$record->is_active])),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Angkatan')
+                        ->modalDescription('Semua data kegiatan dan album terkait mungkin terpengaruh.')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('toggleActive')
+                        ->label('Aktifkan')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_active' => true]))),
                     Actions\DeleteBulkAction::make()
                         ->label('Hapus Terpilih')
                         ->modalHeading('Hapus Angkatan Terpilih')

@@ -16,14 +16,21 @@ class HeroSlideResource extends Resource
 {
     protected static ?string $model = HeroSlide::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'subtitle'];
+    }
+
     public static function getNavigationIcon(): string|null
     {
-        return 'heroicon-o-photo';
+        return 'heroicon-o-window';
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'Hero Slider';
+        return 'Slide Hero';
     }
 
     public static function getModelLabel(): string
@@ -33,50 +40,61 @@ class HeroSlideResource extends Resource
 
     public static function getPluralModelLabel(): string
     {
-        return 'Hero Slider';
+        return 'Slide Hero';
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 0;
+        return -1;
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Konten';
+        return 'Beranda';
     }
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                SchemaComponents\Section::make('Detail Slide')
-                    ->description('Kelola gambar dan teks untuk hero slider')
+                SchemaComponents\Section::make('Konten Slide')
+                    ->icon('heroicon-o-photo')
                     ->schema([
                         FormComponents\FileUpload::make('image')
-                            ->label('Gambar')
+                            ->label('Gambar Latar')
                             ->image()
                             ->required()
                             ->disk('public')
                             ->visibility('public')
                             ->directory('hero-slides')
-                            ->imageResizeMode('cover')
-                            ->imageCropAspectRatio('16:9')
-                            ->imageResizeTargetWidth('1920')
-                            ->imageResizeTargetHeight('1080')
+                            ->imageEditor()
                             ->openable()
                             ->downloadable()
-                            ->previewable(true)
-                            ->columnSpanFull(),
+                            ->previewable(true),
+                        FormComponents\TextInput::make('title')
+                            ->label('Judul')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Judul utama slide'),
+                        FormComponents\TextInput::make('subtitle')
+                            ->label('Subjudul')
+                            ->maxLength(255)
+                            ->placeholder('Teks pendukung judul'),
+                    ])
+                    ->columns(2),
+
+                SchemaComponents\Section::make('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->schema([
                         FormComponents\TextInput::make('order')
                             ->label('Urutan')
                             ->numeric()
                             ->default(0)
-                            ->helperText('Urutan tampil (0 = pertama)'),
+                            ->required()
+                            ->helperText('Semakin kecil angka, semakin awal ditampilkan'),
                         FormComponents\Toggle::make('is_active')
                             ->label('Aktif')
-                            ->default(true)
-                            ->helperText('Tampilkan slide ini di website'),
+                            ->default(true),
                     ])
                     ->columns(2),
             ]);
@@ -89,35 +107,70 @@ class HeroSlideResource extends Resource
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Gambar')
                     ->disk('public')
-                    ->height(60)
-                    ->width(100),
+                    ->height(48)
+                    ->width(80)
+                    ->extraImgAttributes(['class' => 'object-cover rounded']),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Judul')
+                    ->searchable()
+                    ->limit(30)
+                    ->weight('semibold'),
+                Tables\Columns\TextColumn::make('subtitle')
+                    ->label('Subjudul')
+                    ->limit(30)
+                    ->toggleable()
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('order')
                     ->label('Urutan')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignment('center')
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Aktif')
-                    ->boolean(),
+                    ->boolean()
+                    ->sortable()
+                    ->toggleable(),
             ])
             ->defaultSort('order')
             ->reorderable('order')
+            ->striped()
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Status')
+                    ->placeholder('Semua')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif'),
+            ])
             ->actions([
-                Actions\EditAction::make()
-                    ->label('Ubah'),
-                Actions\DeleteAction::make()
-                    ->label('Hapus')
-                    ->modalHeading('Hapus Slide')
-                    ->modalDescription('Apakah Anda yakin ingin menghapus slide ini?')
-                    ->modalSubmitActionLabel('Ya, Hapus')
-                    ->modalCancelActionLabel('Batal'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Ubah'),
+                    Actions\Action::make('toggleActive')
+                        ->label(fn (HeroSlide $record) => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
+                        ->icon('heroicon-o-power')
+                        ->color(fn (HeroSlide $record) => $record->is_active ? 'warning' : 'success')
+                        ->action(fn (HeroSlide $record) => $record->update(['is_active' => !$record->is_active])),
+                    Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->modalHeading('Hapus Slide')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
+                ]),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('toggleActive')
+                        ->label('Aktifkan')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_active' => true]))),
                     Actions\DeleteBulkAction::make()
-                        ->label('Hapus Terpilih'),
+                        ->label('Hapus Terpilih')
+                        ->modalHeading('Hapus Slide Terpilih')
+                        ->modalSubmitActionLabel('Ya, Hapus')
+                        ->modalCancelActionLabel('Batal'),
                 ]),
             ])
             ->emptyStateHeading('Belum Ada Slide')
-            ->emptyStateDescription('Tambahkan gambar untuk hero slider.')
+            ->emptyStateDescription('Tambahkan slide untuk halaman depan website.')
             ->emptyStateActions([
                 Actions\CreateAction::make()
                     ->label('Tambah Slide'),
